@@ -1,0 +1,24 @@
+This program allows you to search for adoptable pet information across the United States.
+
+Acceptable commands include: "shelters", "ages data", "pets by age", "breed search".
+
+"shelters":
+	-searches database for shelter names 
+	-plots shelter locations on a map
+
+"ages data":
+	-displays a bar graph showing the number of pets in each age category
+	-age categories: "baby", "young", "adult", "old"
+
+"pets by age":
+	-asks user to enter an age category
+	-age categories: "baby", "young", "adult", "old"
+	-returns a table with all pets within that age category
+
+"breed search":
+	-asks user to enter a breed
+	-searches database to return any pets with a breed LIKE the entered breed
+
+"pet profile":
+	-asks user for pet name
+	-opens pet's profile page in webbrowser
