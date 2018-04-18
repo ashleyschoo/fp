@@ -296,8 +296,9 @@ def update_foreign_keys():
         cur = conn.cursor()
     except OperationalError as e:
         print(e)
-    statement = 'UPDATE Pets SET ShelterId = (SELECT Id FROM Shelters WHERE Pets.ShelterLocation = Shelters.shelterLocation ) '
+    statement = ' UPDATE Pets SET ShelterId = (SELECT Id FROM Shelters WHERE Pets.ShelterLocation = Shelters.shelterLocation ) '
     cur.execute(statement)
+    conn.commit()
 
 
 
