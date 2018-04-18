@@ -44,8 +44,8 @@ class TestMyCode(unittest.TestCase):
     	self.assertIn(("Baby"), bar_graph_x_values)
     	self.assertIn(("Adult"), bar_graph_x_values)
     	self.assertIn(("Senior"), bar_graph_x_values)
-    	self.assertEqual(len(bar_graph_y_values), 8)
-    	self.assertEqual(len(bar_graph_x_values), 8)
+    	self.assertEqual(len(bar_graph_y_values), 4)
+    	self.assertEqual(len(bar_graph_x_values), 4)
 
     def test_get_list_of_shelters_for_google_api(self):
 
