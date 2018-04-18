@@ -10,7 +10,7 @@ sys.stdout=codecs.getwriter('utf-8')(sys.stdout.buffer)
 from bs4 import BeautifulSoup
 import plotly.plotly as py
 import plotly.graph_objs as go
-
+import sqlite3
 
 import math
 math.inf
@@ -52,6 +52,18 @@ def make_request_using_cache(url):
         fw.write(dumped_json_cache)
         fw.close() # Close the open file
         return CACHE_DICTION[unique_ident]
+class Pet:
+    def __init__(self, name = "Buddy", age_group = "Young" , breed = "Labrador", sheltername = ' ', description = " I just met you and I love yo..SQUIRREL!!", petId = ' '):
+        self.name = name
+        self.age_group = age_group
+        self.breed = breed
+        self.gender = gender
+        self.sheltername = sheltername
+        self.description = description
+        self.petId = petId
+    def __str__(self):
+        str__ = self.name +' ' + self.age_group + ' ' + self.breed + " " + self.sheltername + " " + self.description + ' ' + self.petId
+        return str__
 
 
 pets_list = []
@@ -66,24 +78,24 @@ def create_pet_search(url):
         names = pets.find_all('span', role = 'heading')
         for pet in names:
             name = pet.text
-            print(name)
+            # print(name)
 
         breeds = pets.find_all('div', class_ = 'breed')
         for pet in breeds:
             breed = pet.text.strip()
-            print(breed)
+            # print(breed)
         agegroups = pets.find_all('div', class_= 'age')
         for pet in agegroups:
             age = pet.text.strip()
-            print(age)
+            # print(age)
         locations = pets.find_all('div', class_ = 'location')
         for pet in locations:
             location = pet.text.strip()
-            print(location)
+            # print(location)
         pet_profiles = pets.find_all('a', class_ = 'pflink')
         for pet in pet_profiles:
             pet_profile = pet['href']
-            print(pet_profile)
+            # print(pet_profile)
             try:
                 pets_list.append((name, breed, age, location, pet_profile))
             except UnboundLocalError:
@@ -94,7 +106,7 @@ def create_pet_search(url):
                     writer = csv.writer(csv_file)
                     writer.writerow((name, age, breed, location, pet_profile))
 
-# x = create_pet_search(url)
+
 
 
 def make_request_using_shelters_cache(shelters_url):
@@ -112,10 +124,7 @@ def make_request_using_shelters_cache(shelters_url):
         fw.close() # Close the open file
         return CACHE_DICTION[unique_ident]
 
-shelters_urls = []
-for pet in pets_list:
-    shelters_url = (pet[4])
-    shelters_urls.append(shelters_url)
+
 
 
 
@@ -130,7 +139,7 @@ def create_shelters(shelters_url):
         shelter_names = items.find_all('h2', class_ = 'txt txt_h2')
         for item in shelter_names:
             shelterName = item.text.strip()
-            print(shelterName)
+            # print(shelterName)
 
         shelter_addresses = items.find_all(itemprop = 'streetAddress')
         for item in shelter_addresses:
@@ -152,8 +161,9 @@ def create_shelters(shelters_url):
             shelterpostalCode = item.text.strip()
 
         try:
-            shelterAddresss = shelterAddress + ' ' + shelterCity + ' ' + shelterRegion + " " + shelterpostalCode
-            print(shelterAddresss)
+            shelterLocation = shelterCity + " "  + shelterRegion
+            shelterAddresss = shelterAddress + ' ' + shelterLocation + " " + shelterpostalCode
+            # print(shelterAddresss)
         except UnboundLocalError:
             shelterAddress = '1059 Sweisford Road'
             shelterCity = 'Perkiomenville,'
@@ -164,7 +174,7 @@ def create_shelters(shelters_url):
         try:
             for item in shelter_phones[2]:
                 shelterPhone = item.strip()
-                print(shelterPhone)
+                # print(shelterPhone)
         except IndexError:
             shelterPhone = 'NotAvailable'
 
@@ -172,15 +182,14 @@ def create_shelters(shelters_url):
         shelter_websites = items.find_all('a', class_="btn btn_borderDark m-btn_full")
         for item in shelter_websites:
             shelterWebsite = item['href']
-            print(shelterWebsite)
+            # print(shelterWebsite)
 
             with open('shelters.csv', 'a', newline = '') as csv_file:
                 writer = csv.writer(csv_file)
-                writer.writerow((shelterName, shelterAddress, shelterCity, shelterRegion, shelterpostalCode, shelterPhone, shelterWebsite))
+                writer.writerow((shelterName, shelterAddress, shelterLocation, shelterpostalCode, shelterPhone, shelterWebsite))
 
 #retrieves all pet profile website urls and scrapes all of them for shelter info
-# for shelterinfo in shelters_urls:
-#     a = create_shelters(shelterinfo)
+
 
 
 PETSCSV = '500pets.csv'
@@ -223,8 +232,7 @@ def create_pets_db():
                 'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
                 'shelterName' TEXT,
                 'shelterAddress' TEXT,
-                'shelterCity' TEXT,
-                'shelterRegion' TEXT,
+                'shelterLocation' TEXT,
                 'shelterpostalCode' TEXT,
                 'shelterPhone' TEXT,
                 'shelterWebsite' TEXT
@@ -251,7 +259,7 @@ def put_data_into_table():
             INSERT INTO Pets(Id, PetName, AgeGroup, Breed, 
             ShelterLocation, peturl, ShelterId) 
             VALUES(?,?,?,?,?,?,?); '''
-            values = (None, row[0].strip(), row[1], row[2], row[3], row[4], None)
+            values = (None, row[0].strip('" ! # "'), row[1], row[2], row[3], row[4], None)
             cur.execute(statement, values)
             conn.commit()
 
@@ -269,23 +277,29 @@ def put_shelter_into_table():
     with open(SHELTERSCSV) as Shelters_File:
         data = csv.reader(Shelters_File)
         for row in data:
-            tag = row[3] + row[4]
+            tag = row[3]
             region_city_list.append(row)
             #check for duplicates
             if tag not in region_city_list: 
                 statement = '''
-                INSERT INTO Shelters(Id, shelterName, shelterAddress, shelterCity, shelterRegion, 
+                INSERT INTO Shelters(Id, shelterName, shelterAddress, shelterLocation, 
                 shelterpostalCode, shelterPhone, shelterWebsite) 
-                VALUES(?,?,?,?,?,?,?,?); '''
-                values = (None, row[0], row[1], row[2], row[3], row[4], row[5], row[6])
+                VALUES(?,?,?,?,?,?,?); '''
+                values = (None, row[0], row[1], row[2], row[3], row[4], row[5])
                 cur.execute(statement, values)
                 conn.commit()
                 region_city_list.append(tag)
 
+def update_foreign_keys():
+    try:
+        conn = sqlite.connect(DBNAME)
+        cur = conn.cursor()
+    except OperationalError as e:
+        print(e)
+    statement = 'UPDATE Pets SET ShelterId = (SELECT Id FROM Shelters WHERE Pets.ShelterLocation = Shelters.shelterLocation ) '
+    cur.execute(statement)
 
-# a = create_pets_db()
-# b = put_data_into_table()
-# c = put_shelter_into_table()
+
 
 #################### DATA PROCESSING STATEMENTS TO PREP FOR PLOTLY  ##########################
 
@@ -310,6 +324,7 @@ breed_search_B_data = []
 breed_search_A_data = []
 
 def table_data_breed_search():
+    # while input_breed != 'quit':
     try:
         conn = sqlite.connect(DBNAME)
         cur = conn.cursor()
@@ -322,6 +337,7 @@ def table_data_breed_search():
         breed_search_N_data.append(row[0])
         breed_search_B_data.append(row[1])
         breed_search_A_data.append(row[2])
+
 
 ### DONE ###
 #BAR GRAPH number of pets in 4 age groups
@@ -339,6 +355,8 @@ def make_bar_graph_data():
     for row in cur:
         bar_graph_x_values.append(row[1])
         bar_graph_y_values.append(row[0])
+
+
 
 ### DONE ###
 #TABLE finds pets based on user input age
@@ -421,7 +439,7 @@ def find_pet_profile_urls():
     cur.execute(statement)
     for row in cur:
         pet_profile_url.append(row[0])
-    print(pet_profile_url)
+    # print(pet_profile_url)
 
 
 ######################### PLOTLY CODES ##########################################
@@ -567,48 +585,79 @@ def interactive_prompt():
                 for shelter in shelterstr:
                     b = get_shelter_location(shelterstr = shelter)
                 c = map_shelter()
-                return(a,b,c)
+                a 
+                b 
+                c 
+                continue 
 
             if response == 'ages data':
                 a = make_bar_graph_data()
                 b = bar_graph_ages()
-                return(a,b)
+                a
+                b
+                continue
 
 
             if response == 'pets by age':
                 a = input_find_pets_by_age() 
                 b = table_pets_by_age()
-                return(a,b)
+                a 
+                b 
+                continue
 
             if response == 'breed search':
+
                 a = table_data_breed_search()
                 b = make_table_breed_search()
-                return(a,b)
+                a 
+                b 
+                continue
+
 
             if response == 'pet profile':
                 a = find_pet_profile_urls()
                 b = launch_pet_profile_page()
-                return(a,b)
+                a 
+                b 
+                continue
 
 
-        # except TypeError:
-        #     print("Invalid entry, Please enter 'help' for approved inputs")
-        #     continue
-#         except IndexError:
-#             print("Invalid entry, Please enter 'help' for approved inputs")
-#             continue
+        except TypeError:
+            print("Invalid entry, Please enter 'help' for approved inputs")
+            continue
+        except IndexError:
+            print("Invalid entry, Please enter 'help' for approved inputs")
+            continue
         except UnboundLocalError:
             print("Something went wrong, please try again")
             continue
-#         except sqlite3.OperationalError:
-#             print("Invalid entry, Please enter 'help' for approved inputs")
-#             continue
+        except sqlite3.OperationalError:
+            print("Invalid entry, Please enter 'help' for approved inputs")
+            continue
+        except PlotlyRequestError:
+            print("Please delete some of your plotly files to make room for new ones")
+            continue
 
+################ CALLING FUNCTIONS HERE ############################
+
+# p = create_pet_search(url)
+
+# shelters_urls = []
+# for pet in pets_list:
+#     shelters_url = (pet[4])
+#     shelters_urls.append(shelters_url)
+
+# for shelterinfo in shelters_urls:
+#     S = create_shelters(shelterinfo)
+
+# a = create_pets_db()
+# b = put_data_into_table()
+# c = put_shelter_into_table()
+# d = update_foreign_keys()
 
 interactive_prompt()
 
-
 ############## UNCOMMENT TO RUN TEST FILE ##############################################
 # # Make sure nothing runs or prints out when this file is run as a module
-# if __name__=="__main__":
-#     interactive_prompt()
+if __name__=="__main__":
+    interactive_prompt()

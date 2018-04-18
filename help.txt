@@ -8,17 +8,20 @@ Acceptable commands include: "shelters", "ages data", "pets by age", "breed sear
 
 "ages data":
 	-displays a bar graph showing the number of pets in each age category
-	-age categories: "baby", "young", "adult", "old"
+	-age categories: "Baby", "Young", "Adult", "Senior"
 
 "pets by age":
 	-asks user to enter an age category
-	-age categories: "baby", "young", "adult", "old"
+	-age categories: "Baby", "Young", "Adult", "Senior"
 	-returns a table with all pets within that age category
 
 "breed search":
 	-asks user to enter a breed
+	-breeds must be spelled correctly
 	-searches database to return any pets with a breed LIKE the entered breed
 
 "pet profile":
 	-asks user for pet name
+	-pet name must be spelled correctly and include shelter-assigned punctuation
+	-pets who have been adopted will not have a profile
 	-opens pet's profile page in webbrowser
